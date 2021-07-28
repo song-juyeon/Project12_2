@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
         editCountResult = findViewById(R.id.edit_count_result);
         Button btnInit = findViewById(R.id.btn_init);
         Button btnInput = findViewById(R.id.btn_input);
+        Button btnRevise = findViewById(R.id.btn_revise);
+        Button btnDelete = findViewById(R.id.btn_delete);
         Button btnSearch = findViewById(R.id.btn_search);
 
         dbHelper = new MyDBHelper(this);
@@ -44,8 +46,29 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 db = dbHelper.getWritableDatabase();
                 db.execSQL("insert into groupTB values('"+editName.getText().toString()+"', "+editCount.getText().toString()+");");
+                selectDB();
                 db.close();
                 Toast.makeText(getApplicationContext(), "행이 정상적으로 삽입되었습니다", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnRevise.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                db = dbHelper.getWritableDatabase();
+                db.execSQL("update groupTB set count=" +editCount.getText().toString()+" where name='"+editName.getText().toString()+"';");
+                selectDB();
+                db.close();
+            }
+        });
+
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                db = dbHelper.getWritableDatabase();
+                db.execSQL("delete from groupTB where name ='"+editName.getText().toString()+"';");
+                db.close();
+                Toast.makeText(getApplicationContext(), "행이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -67,6 +90,22 @@ public class MainActivity extends AppCompatActivity {
                 db.close();
             }
         });
+    }
+
+    public void selectDB(){
+        db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from groupTB;", null);
+        String strName = "그룹 이름\r\n_________\r\n";
+        String strCount = "인원\r\n_________\r\n";
+        while (cursor.moveToNext()){
+            strName += cursor.getString(0) + "\r\n";
+            strCount += cursor.getString(1) + "\r\n";
+        }
+        editNameResult.setText(strName);
+        editCountResult.setText(strCount);
+
+        cursor.close();
+        db.close();
     }
 
     public class MyDBHelper extends SQLiteOpenHelper{
